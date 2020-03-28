@@ -1,9 +1,11 @@
 from matrix_lite import led
 from time import sleep
 from datetime import datetime
+import threading
+from threading import Lock
 
 class LEDClock:
-    def __init__():
+    def __init__(self):
         # Thread
         self._lock = Lock()
         self._thread_flag = threading.Event()
@@ -12,43 +14,28 @@ class LEDClock:
     
     def stop_thread(self):
         self._thread_flag.set()
+        led.set("black")
 
-    def _trigger_time():
-        try:
+    def _trigger_time(self):
+        #try:
             while True:
                 # Adapt led every minute
+                self._adapt_led()
                 sleep(60)
-                _adapt_led()
-        except:
-            traceback.print_exc()
-        finally:
-            pass
+        #except:
+        #    traceback.print_exc()
+        #finally:
+        #    pass
 
-    def _adapt_led():
+    def _adapt_led(self):
         hour = datetime.now().hour
         minute = datetime.now().minute
-        set_hour(hour)
-        set_minute(minute)
+        self.set_hour(hour)
+        self.set_minute(minute)
         
-    def set_hour(hour):
+    def set_hour(self, hour):
         if hour > 12:
             hour = hour % 12
-            switcher = {
-                0: twelve(1, 18),
-                1: odd(2),
-                2: even(3),
-                3: odd(5),
-                4: even(6),
-                5: odd(8),
-                6: even(9),
-                7: odd(11),
-                8: even(12),
-                9: odd(14),
-                10: even(15),
-                11: odd(17),
-                12: twelve()
-            }
-            led.set(switcher.[hour])
 
         def odd(number):
             led_array = []
@@ -57,6 +44,7 @@ class LEDClock:
             led_array.append("blue")
             while len(led_array) < 18:
                 led_array.append("black")
+            return led_array
         
         def even(number):
             led_array = []
@@ -66,6 +54,7 @@ class LEDClock:
             led_array.append("blue")
             while len(led_array) < 18:
                 led_array.append("black")
+            return led_array
 
         def twelve():
             led_array = []
@@ -73,7 +62,25 @@ class LEDClock:
             for x in range(16):
                 led_array.append("black")
             led_array.append("blue")
+            return led_array
 
+        switcher = {
+            0: twelve(),
+            1: odd(2),
+            2: even(3),
+            3: odd(5),
+            4: even(6),
+            5: odd(8),
+            6: even(9),
+            7: odd(11),
+            8: even(12),
+            9: odd(14),
+            10: even(15),
+            11: odd(17),
+            12: twelve()
+        }
 
-    def set_minute(minute):
+        led.set(switcher[hour])
+
+    def set_minute(self, minute):
         pass
