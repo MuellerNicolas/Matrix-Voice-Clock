@@ -39,7 +39,7 @@ class LEDClock:
 
         def odd(number):
             led_array = []
-            for x in range(number):
+            for x in range(number-1):
                 led_array.append("black")
             led_array.append("blue")
             while len(led_array) < 18:
@@ -48,7 +48,7 @@ class LEDClock:
         
         def even(number):
             led_array = []
-            for x in range(number):
+            for x in range(number-1):
                 led_array.append("black")
             led_array.append("blue")
             led_array.append("blue")
@@ -59,7 +59,7 @@ class LEDClock:
         def twelve():
             led_array = []
             led_array.append("blue")
-            for x in range(16):
+            for x in range(16-1):
                 led_array.append("black")
             led_array.append("blue")
             return led_array
