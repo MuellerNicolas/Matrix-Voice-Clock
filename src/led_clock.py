@@ -3,9 +3,28 @@ from time import sleep
 from datetime import datetime
 import threading
 from threading import Lock
+from math import ceil
 
 class LEDClock:
     def __init__(self):
+        # led mapping
+        self._switcher = {
+            0: self._twelve(),
+            1: self._odd(2),
+            2: self._even(3),
+            3: self._odd(5),
+            4: self._even(6),
+            5: self._odd(8),
+            6: self._even(9),
+            7: self._odd(11),
+            8: self._even(12),
+            9: self._odd(14),
+            10: self._even(15),
+            11: self._odd(17),
+            12: self._twelve()
+        }
+        # hour leds
+        self._led_array
         # Thread
         self._lock = Lock()
         self._thread_flag = threading.Event()
@@ -17,70 +36,52 @@ class LEDClock:
         led.set("black")
 
     def _trigger_time(self):
-        #try:
-            while True:
-                # Adapt led every minute
-                self._adapt_led()
-                sleep(60)
-        #except:
-        #    traceback.print_exc()
-        #finally:
-        #    pass
+        while True:
+            # Adapt led every minute
+            self._adapt_led()
+            sleep(60)
 
     def _adapt_led(self):
         hour = datetime.now().hour
         minute = datetime.now().minute
-        self.set_hour(hour)
-        self.set_minute(minute)
+        self._set_hour(hour)
+        self._set_minute(minute)
         
-    def set_hour(self, hour):
+    def _set_hour(self, hour):
         if hour > 12:
             hour = hour % 12
 
-        def odd(number):
-            led_array = []
-            for x in range(number-1):
-                led_array.append("black")
-            led_array.append("blue")
-            while len(led_array) < 18:
-                led_array.append("black")
-            return led_array
-        
-        def even(number):
-            led_array = []
-            for x in range(number-1):
-                led_array.append("black")
-            led_array.append("blue")
-            led_array.append("blue")
-            while len(led_array) < 18:
-                led_array.append("black")
-            return led_array
+        led.set(self._switcher[hour])
 
-        def twelve():
-            led_array = []
-            led_array.append("blue")
-            for x in range(16-1):
-                led_array.append("black")
-            led_array.append("blue")
-            return led_array
+    def _set_minute(self, minute):
+        minute = ceil(minute/5)
+        led.set(self._switcher[minute])
 
-        switcher = {
-            0: twelve(),
-            1: odd(2),
-            2: even(3),
-            3: odd(5),
-            4: even(6),
-            5: odd(8),
-            6: even(9),
-            7: odd(11),
-            8: even(12),
-            9: odd(14),
-            10: even(15),
-            11: odd(17),
-            12: twelve()
-        }
 
-        led.set(switcher[hour])
+    # Methods setting the leds
+    def _odd(self, number):
+        self._led_array = []
+        for x in range(number-1):
+            self._led_array.append("black")
+        self._led_array.append("blue")
+        while len(self._led_array) < 18:
+            self._led_array.append("black")
+        return self._led_array
+    
+    def _even(self, number):
+        self._led_array = []
+        for x in range(number-1):
+            self._led_array.append("black")
+        self._led_array.append("blue")
+        self._led_array.append("blue")
+        while len(self._led_array) < 18:
+            self._led_array.append("black")
+        return self._led_array
 
-    def set_minute(self, minute):
-        pass
+    def _twelve(self):
+        self._led_array = []
+        self._led_array.append("blue")
+        for x in range(16-1):
+            self._led_array.append("black")
+        self._led_array.append("blue")
+        return self._led_array
