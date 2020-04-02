@@ -4,18 +4,17 @@ from datetime import datetime
 import threading
 from threading import Lock
 from math import ceil
-import tracing
 
 class LEDClock:
-    def __init__(self, offset):
+    def __init__(self, offset, hour_color, minute_color, same_color):
         # offset depending on the rotation off the materix voice module
         self.offset = offset
         # hour leds
         self._led_array = []
         self._hours_set = False
-        self.hour_color = "blue"
-        self.minute_color = "red"
-        self.same_color = "yellow"
+        self.hour_color = hour_color
+        self.minute_color = minute_color
+        self.same_color = same_color
 
         # Thread
         self._lock = Lock()
@@ -85,7 +84,7 @@ class LEDClock:
 
     def _set_all_black(self):
         # set all 18 LEDs to off / black
-        for x in range(17):
+        for x in range(18):
             self._led_array.append("black")
 
     # Methods setting the leds
@@ -115,16 +114,19 @@ class LEDClock:
     def _twelve(self, offset):
         if (self._hours_set):
             # -1 cuz array
-            print((18+offset-1)%18)
-            try:
-                if(self._led_array[(18+offset-1)%18] == self.hour_color):
-                    self._led_array[(18+offset-1)%18] = self.same_color
-                    self._led_array[(0+offset-1)%18] = self.same_color
-                else:
-                    self._led_array[(18+offset-1)%18] = self.minute_color
-                    self._led_array[(0+offset-1)%18] = self.minute_color
+            if(self._led_array[(18+offset-1)%18] == self.hour_color):
+                self._led_array[(18+offset-1)%18] = self.same_color
+                self._led_array[(0+offset)%18] = self.same_color
             else:
-                self._led_array[(18+offset-1)%18] = self.hour_color
-                self._led_array[(0+offset-1)%18] = self.hour_color
-            except:
+                self._led_array[(18+offset-1)%18] = self.minute_color
+                self._led_array[(0+offset)%18] = self.minute_color
+        else:
+            self._led_array[(18+offset-1)%18] = self.hour_color
+            self._led_array[(0+offset)%18] = self.hour_color
 
+    def set_all_colors(self, hour_color, minute_color, same_color):
+        if(hour_color != minute_color and minute_color != same_color and hour_color != same_color):
+            self.hour_color = hour_color
+            self.minute_color = minute_color
+            self.same_color = same_color
+            self._adapt_led()

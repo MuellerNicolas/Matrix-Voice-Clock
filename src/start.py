@@ -1,11 +1,10 @@
-#from matrix_lite import led
 from time import sleep
 from led_clock import LEDClock
 import traceback
 
-# Testing
-#led.set(['red', 'gold', 'purple', {}, 'black', '#6F41C1', 'blue', {'g':255}])
-LEDClock = LEDClock(0)
+# set the offset of led (to the right)
+# set the colors for hour, minute and for hour and minute crossing
+LEDClock = LEDClock(0, "blue", "red", "yellow")
 try:
     while True:
         sleep(10)
