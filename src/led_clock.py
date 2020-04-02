@@ -4,28 +4,19 @@ from datetime import datetime
 import threading
 from threading import Lock
 from math import ceil
+import tracing
 
 class LEDClock:
-    def __init__(self):
+    def __init__(self, offset):
+        # offset depending on the rotation off the materix voice module
+        self.offset = offset
         # hour leds
         self._led_array = []
         self._hours_set = False
-        # led mapping
-        self._switcher = {
-            0: self._twelve(),
-            1: self._odd(2),
-            2: self._even(3),
-            3: self._odd(5),
-            4: self._even(6),
-            5: self._odd(8),
-            6: self._even(9),
-            7: self._odd(11),
-            8: self._even(12),
-            9: self._odd(14),
-            10: self._even(15),
-            11: self._odd(17),
-            12: self._twelve()
-        }
+        self.hour_color = "blue"
+        self.minute_color = "red"
+        self.same_color = "yellow"
+
         # Thread
         self._lock = Lock()
         self._thread_flag = threading.Event()
@@ -45,104 +36,95 @@ class LEDClock:
     def _adapt_led(self):
         hour = datetime.now().hour
         minute = datetime.now().minute
+        self._set_all_black()
         self._set_hour(hour)
         self._hours_set = True
         self._set_minute(minute)
+        # reset the led array & hours set
         self._led_array = []
         self._hours_set = False
 
     def _set_hour(self, hour):
         if hour > 12:
             hour = hour % 12
-        print("hour", hour)
-        print("after hour")
-        print(self._switcher)
-        print("")
-        led.set(self._switcher[hour])
+        self._select_meth(hour)
+        led.set(self._led_array)
 
     def _set_minute(self, minute):
+        # ceil: i want to display like 10:52 as 10:55,
+        #  better be too early than to late
         minute = ceil(minute/5)
-        print("minute", minute)
-        print("after hour")
-        print(self._switcher)
-        print("")
-        led.set(self._switcher[minute])
+        self._select_meth(minute)
+        led.set(self._led_array)
 
+    def _select_meth(self, number):
+        if(number == 0 or number == 12):
+            self._twelve(self.offset)
+        elif(number == 1):
+            self._odd(2, self.offset)
+        elif(number == 2):
+            self._even(3, self.offset)
+        elif(number == 3):
+            self._odd(5, self.offset)
+        elif(number == 4):
+            self._even(6, self.offset)
+        elif(number == 5):
+            self._odd(8, self.offset)
+        elif(number == 6):
+            self._even(9, self.offset)
+        elif(number == 7):
+            self._odd(11, self.offset)
+        elif(number == 8):
+            self._even(12, self.offset)
+        elif(number == 9):
+            self._odd(14, self.offset)
+        elif(number == 10):
+            self._even(15, self.offset)
+        elif(number == 11):
+            self._odd(17, self.offset)
+
+    def _set_all_black(self):
+        # set all 18 LEDs to off / black
+        for x in range(17):
+            self._led_array.append("black")
 
     # Methods setting the leds
-    def _odd(self, number):
-        local_led_array = []
-        for x in range(number-2):
-            if(not self._hours_set and self._led_array[len(local_led_array)-1] != "blue"):
-                self._led_array.append("black")
-                local_led_array.append("black")
-            local_led_array.append("black")
+    def _odd(self, number, offset):
         if (self._hours_set):
-            if(self._led_array[len(local_led_array)-1] == "blue"):
-                self._led_array.append("yellow")
-                local_led_array.append("yellow")
+            # -1 cuz array
+            if(self._led_array[(number+offset-1)%18] == self.hour_color):
+                self._led_array[(number+offset-1)%18] = self.same_color
             else:
-                self._led_array.append("red")
-                local_led_array.append("red")
+                self._led_array[(number+offset-1)%18] = self.minute_color
         else:
-            self._led_array.append("blue")
-            local_led_array.append("blue")
-        while len(self._led_array) < 18:
-            if(not self._hours_set and self._led_array[len(local_led_array)-1] != "blue"):
-                self._led_array.append("black")
-                local_led_array.append("black")
-            local_led_array.append("black")
-        return self._led_array
+            self._led_array[(number+offset-1)%18] = self.hour_color
     
-    def _even(self, number):
-        local_led_array = []
-        for x in range(number-2):
-            if(not self._hours_set and self._led_array[len(local_led_array)-1] != "blue"):
-                self._led_array.append("black")
-                local_led_array.append("black")
-            local_led_array.append("black")
-
+    def _even(self, number, offset):
         if (self._hours_set):
-            if(self._led_array[len(local_led_array)-1] == "blue"):
-                self._led_array.append("yellow")
-                self._led_array.append("yellow")
-                local_led_array.append("yellow")
-                local_led_array.append("yellow")
+            # -1 cuz array
+            if(self._led_array[(number+offset-1)%18] == self.hour_color):
+                self._led_array[(number+offset-1)%18] = self.same_color
+                self._led_array[(number+offset)%18] = self.same_color
             else:
-                self._led_array.append("red")
-                self._led_array.append("red")
-                local_led_array.append("red")
-                local_led_array.append("red")
+                self._led_array[(number+offset-1)%18] = self.minute_color
+                self._led_array[(number+offset)%18] = self.minute_color
         else:
-            self._led_array.append("blue")
-            self._led_array.append("blue")
-            local_led_array.append("blue")
-            local_led_array.append("blue")
+            self._led_array[(number+offset-1)%18] = self.hour_color
+            self._led_array[(number+offset)%18] = self.hour_color
 
-        while len(self._led_array) < 18:
-            if(not self._hours_set and self._led_array[len(local_led_array)-1] != "blue"):
-                self._led_array.append("black")
-                local_led_array.append("black")
-            local_led_array.append("black")
-        return self._led_array
-
-    def _twelve(self):
-        local_led_array = []
+    def _twelve(self, offset):
         if (self._hours_set):
-            if(self._led_array[0] == "blue"):
-                self._led_array.append("yellow")
-                self._led_array.append("yellow")
-                local_led_array.append("yellow")
-                local_led_array.append("yellow")
+            # -1 cuz array
+            print((18+offset-1)%18)
+            try:
+                if(self._led_array[(18+offset-1)%18] == self.hour_color):
+                    self._led_array[(18+offset-1)%18] = self.same_color
+                    self._led_array[(0+offset-1)%18] = self.same_color
+                else:
+                    self._led_array[(18+offset-1)%18] = self.minute_color
+                    self._led_array[(0+offset-1)%18] = self.minute_color
             else:
-                self._led_array.append("red")
-                local_led_array.append("red")
-        else:
-            self._led_array.append("blue")
-            local_led_array.append("blue")
-        for x in range(15):
-            self._led_array.append("black")
-            local_led_array.append("black")
-        self._led_array.append("blue")
-        local_led_array.append("blue")
-        return self._led_array
+                self._led_array[(18+offset-1)%18] = self.hour_color
+                self._led_array[(0+offset-1)%18] = self.hour_color
+            except:
+

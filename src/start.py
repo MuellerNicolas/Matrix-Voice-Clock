@@ -5,7 +5,7 @@ import traceback
 
 # Testing
 #led.set(['red', 'gold', 'purple', {}, 'black', '#6F41C1', 'blue', {'g':255}])
-LEDClock = LEDClock()
+LEDClock = LEDClock(0)
 try:
     while True:
         sleep(10)
