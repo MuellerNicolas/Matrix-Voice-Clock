@@ -15,9 +15,10 @@ class LEDClock:
         self.hour_color = hour_color
         self.minute_color = minute_color
         self.same_color = same_color
+        # Flag set to true, to display the current time
+        self._display_time = False
 
         # Thread
-        self._lock = Lock()
         self._thread_flag = threading.Event()
         self._thread = threading.Thread(target= self._trigger_time, name = 'clock_thread', daemon = True)
         self._thread.start()
@@ -26,11 +27,19 @@ class LEDClock:
         self._thread_flag.set()
         led.set("black")
 
+    def display_time(self):
+        self._display_time = True
+
+    def stop_displaying(self):
+        self._display_time = False
+        led.set("black")
+
     def _trigger_time(self):
         while True:
-            # Adapt led every minute
-            self._adapt_led()
-            sleep(60)
+            if(self._display_time):
+                # Adapt led every minute
+                self._adapt_led()
+            sleep(1)
 
     def _adapt_led(self):
         hour = datetime.now().hour
@@ -130,3 +139,15 @@ class LEDClock:
             self.minute_color = minute_color
             self.same_color = same_color
             self._adapt_led()
+
+    def set_hour_color(self, hour_color):
+        if(hour_color != self.minute_color and hour_color != self.same_color):
+            self.hour_color = hour_color
+            
+    def set_minute_color(self, minute_color):
+        if(minute_color != self.minute_color and minute_color != self.same_color):
+            self.minute_color = minute_color
+
+    def set_same_color(self, same_color):
+        if(same_color != self.minute_color and same_color != self.hour_color):
+            self.same_color = same_color
