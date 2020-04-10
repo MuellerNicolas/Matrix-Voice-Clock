@@ -14,7 +14,7 @@ except KeyboardInterrupt:
 except:
     traceback.print_exc()
 finally:
-    LEDClock.stop_thread()
+    LEDClock.close()
 
     
 
