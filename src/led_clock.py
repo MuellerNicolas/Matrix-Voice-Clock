@@ -23,7 +23,7 @@ class LEDClock:
         self._thread = threading.Thread(target= self._trigger_time, name = 'clock_thread', daemon = True)
         self._thread.start()
     
-    def stop_thread(self):
+    def close(self):
         self._thread_flag.set()
         led.set("black")
 
